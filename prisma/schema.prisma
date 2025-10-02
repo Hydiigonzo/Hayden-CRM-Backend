@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Contact {
+  id         Int           @id @default(autoincrement())
+  name       String
+  email      String       @unique
+  phone      String?
+  address    String?
+  companies  ContactCompany[]
+  deals      DealContact[]
+}
+
+model Company {
+  id         Int           @id @default(autoincrement())
+  name       String
+  domain     String?
+  industry   String?
+  address    String?
+  contacts   ContactCompany[]
+  deals      Deal[]
+}
+
+model Deal {
+  id         Int           @id @default(autoincrement())
+  title      String
+  stage      String
+  amount     Float
+  company    Company       @relation(fields: [companyId], references: [id])
+  companyId  Int
+  contacts   DealContact[]
+}
+
+
+model ContactCompany {
+  id         Int      @id @default(autoincrement())
+  contact    Contact  @relation(fields: [contactId], references: [id])
+  contactId  Int
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  Int
+
+  @@unique([contactId, companyId])
+}
+
+
+model DealContact {
+  id         Int      @id @default(autoincrement())
+  deal       Deal     @relation(fields: [dealId], references: [id])
+  dealId     Int
+  contact    Contact  @relation(fields: [contactId], references: [id])
+  contactId  Int
+
+  @@unique([dealId, contactId])
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
